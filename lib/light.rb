@@ -6,17 +6,42 @@ class Light
   attr_reader :id,
               :status,
               :bri,
-              :reachable
+              :reachable,
+              :color_light
 
-  def initialize(id, state)
+  def initialize(id, state, color_light=false)
     @id = id
     @on = state['on']
     @bri = state['bri']
     @reachable = state['reachable']
+    @color_light = color_light
+  end
+
+  def color_light?
+    @color_light
   end
 
   def modify(state)
+    state[:transitiontime] = 0
     HTTParty.put("#{root_url}/lights/#{@id}/state", body: state.to_json)
+  end
+
+  def randomize_color
+    state = {
+             # ct: rand(153..500),
+             xy: [rand(0.111..0.888), rand(0.111..0.888)]
+            }
+    modify(state)
+  end
+
+  def colorloop
+    state = {effect: 'colorloop'}
+    modify(state)
+  end
+
+  def end_colorloop
+    state = {effect: 'none'}
+    modify(state)
   end
 
   def set_brightness(amount)

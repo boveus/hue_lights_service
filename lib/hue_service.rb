@@ -7,6 +7,7 @@ class HueService
   include ApiHelper
   def initialize
     @active_lights = []
+    @color_lights = []
   end
 
   def all_lights
@@ -19,11 +20,28 @@ class HueService
 
   def refresh_lights
     @active_lights = []
+    @color_lights = []
     lights_json.each do |light|
       id = light.first
       state = light.last["state"]
-      @active_lights << Light.new(id, state)
+      light = Light.new(id, state, true)
+      @active_lights << light
+      if light.color_light?
+        @color_lights << light
+      end
     end
+  end
+
+  def color_lights_randomize_color
+    @color_lights.each(&:randomize_color)
+  end
+
+  def color_lights_loop
+    @color_lights.each(&:colorloop)
+  end
+
+  def color_lights_end_loop
+    @color_lights.each(&:end_colorloop)
   end
 
   def set_brightness_all_lights(amount)
@@ -31,14 +49,10 @@ class HueService
   end
 
   def turn_on_all_lights
-    @active_lights.each { |light| light.turn_on }
+    @active_lights.each(&:turn_on)
   end
 
   def turn_off_all_lights
-    @active_lights.each { |light| light.turn_off }
+    @active_lights.each(&:turn_off)
   end
 end
-
-hs = HueService.new
-hs.refresh_lights
-hs.turn_off_all_lights
