@@ -9,16 +9,21 @@ class Light
               :reachable,
               :color_light
 
-  def initialize(id, state, color_light=false)
+  def initialize(id, state)
     @id = id
     @on = state['on']
     @bri = state['bri']
     @reachable = state['reachable']
-    @color_light = color_light
+    @color_light = set_color_light(state)
   end
 
   def color_light?
     @color_light
+  end
+
+  def set_color_light(state)
+    if state['xy'] then return true end
+    false
   end
 
   def modify(state)

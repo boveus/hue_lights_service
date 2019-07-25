@@ -8,51 +8,45 @@ class HueService
   def initialize
     @active_lights = []
     @color_lights = []
-  end
-
-  def all_lights
-    HTTParty.get("#{root_url}/lights").body
-  end
-
-  def lights_json
-    JSON.parse(all_lights)
+    refresh_lights
   end
 
   def refresh_lights
-    @active_lights = []
-    @color_lights = []
-    lights_json.each do |light|
-      id = light.first
-      state = light.last["state"]
-      light = Light.new(id, state, true)
-      @active_lights << light
-      if light.color_light?
-        @color_lights << light
-      end
+    all_lights_json.each do |json|
+      light = light_from_json(json)
+      add_to_lights(light)
     end
   end
 
-  def color_lights_randomize_color
-    @color_lights.each(&:randomize_color)
+  def add_to_lights(light)
+    @active_lights << light
+    if light.color_light?
+      @color_lights << light
+    end
   end
 
-  def color_lights_loop
-    @color_lights.each(&:colorloop)
+  def light_from_json(light)
+    id = light.first
+    state = light.last["state"]
+    Light.new(id, state)
   end
 
-  def color_lights_end_loop
-    @color_lights.each(&:end_colorloop)
+  def all_color_lights_do(method)
+    @color_lights.each { |light| light.send(method) }
+  end
+
+  def all_lights_do(method)
+    @active_lights.each { |light| light.send(method) }
+  end
+
+  def random_light_do(methods, sleep_between=0)
+    light = @active_lights.sample
+    light.send(methods[0])
+    sleep sleep_between
+    light.send(methods[1])
   end
 
   def set_brightness_all_lights(amount)
     @active_lights.each { |light| light.set_brightness(amount) }
-  end
-
-  def turn_on_all_lights
-    @active_lights.each(&:turn_on)
-  end
-
-  def turn_off_all_lights
-    @active_lights.each(&:turn_off)
   end
 end

@@ -1,8 +1,14 @@
 require './lib/hue_service'
 
 hs = HueService.new
-hs.refresh_lights
+loop do
+  hs.random_light_do(['turn_off', 'turn_on'], 2)
+end
 
-# hs.color_lights_loop
-
-hs.color_lights_end_loop
+# Light methods
+# color lights
+  # randomize_color
+  # color_lights_loop
+  # color_lights_end_loop
+# turn_on
+# turn_off
